@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png', 'Logo Front1.png'],
       manifest: {
         name: 'GrowGuide Plagron',
         short_name: 'GrowGuide',
