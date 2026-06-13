@@ -6,7 +6,7 @@ export default function Header({ grow }) {
     <header className="bb-header">
       {/* Blütenbande Logo */}
       <img
-        src="/Logo Front1.png"
+        src={`${import.meta.env.BASE_URL}Logo Front1.png`}
         alt="Die Blütenbande"
         className="bb-logo"
         onError={e => {

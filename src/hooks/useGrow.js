@@ -85,8 +85,8 @@ export function useGrow() {
     const body = buildNotificationBody(currentPhase)
     new Notification(`${currentPhase.icon} Neue Phase: ${currentPhase.name}`, {
       body: body || `Dein Grow ist jetzt in einer neuen Phase.`,
-      icon: '/Logo Front1.png',
-      badge: '/Logo Front1.png',
+      icon: `${import.meta.env.BASE_URL}Logo Front1.png`,
+      badge: `${import.meta.env.BASE_URL}Logo Front1.png`,
       tag: `growguide-phase-${currentPhase.id}`,
     })
 
@@ -122,7 +122,7 @@ export function useGrow() {
             setNotifEnabled(true)
             new Notification('📚 Anfänger-Coach aktiv!', {
               body: 'Du wirst bei jedem Phasenwechsel benachrichtigt was als nächstes zu tun ist.',
-              icon: '/Logo Front1.png',
+              icon: `${import.meta.env.BASE_URL}Logo Front1.png`,
               tag: 'anfaenger-coach-welcome',
             })
           }

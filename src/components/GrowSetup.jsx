@@ -25,7 +25,7 @@ export default function GrowSetup({ onStart }) {
       {/* Splash header */}
       <div className="splash-header">
         <img
-          src="/Logo Front1.png"
+          src={`${import.meta.env.BASE_URL}Logo Front1.png`}
           alt="Die Blütenbande"
           className="splash-logo"
           onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }}
