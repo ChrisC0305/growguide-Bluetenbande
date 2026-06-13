@@ -9,6 +9,7 @@ const CHECKS_KEY        = 'growguide_checks'
 const NOTIF_PHASE_KEY   = 'growguide_notif_phase'
 const NOTIF_ENABLED_KEY = 'growguide_notif_enabled'
 const PROFILE_KEY       = 'growguide_grower_profile'
+const BRAND_KEY         = 'growguide_brand'
 
 function load(key, fallback) {
   try {
@@ -42,6 +43,7 @@ export function useGrow() {
   const [todayChecks, setTodayChecks]   = useState(() => load(CHECKS_KEY, {}))
   const [notifEnabled, setNotifEnabled] = useState(() => load(NOTIF_ENABLED_KEY, false))
   const [growerProfileId, setGrowerProfileId] = useState(() => load(PROFILE_KEY, null))
+  const [brand, setBrandState]               = useState(() => load(BRAND_KEY, 'plagron'))
 
   useEffect(() => { save(STORAGE_KEY, grows) }, [grows])
   useEffect(() => { save(ACTIVE_KEY, activeGrowId) }, [activeGrowId])
@@ -49,6 +51,9 @@ export function useGrow() {
   useEffect(() => { save(CHECKS_KEY, todayChecks) }, [todayChecks])
   useEffect(() => { save(NOTIF_ENABLED_KEY, notifEnabled) }, [notifEnabled])
   useEffect(() => { save(PROFILE_KEY, growerProfileId) }, [growerProfileId])
+  useEffect(() => { save(BRAND_KEY, brand) }, [brand])
+
+  const setBrand = useCallback((b) => setBrandState(b), [])
 
   const activeGrow = grows.find(g => g.id === activeGrowId) || null
 
@@ -232,6 +237,8 @@ export function useGrow() {
     growerProfile: getProfileById(growerProfileId),
     growerProfileId,
     setGrowerProfile,
+    brand,
+    setBrand,
     startGrow,
     endGrow,
     deleteGrow,

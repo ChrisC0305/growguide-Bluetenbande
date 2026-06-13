@@ -1,15 +1,41 @@
 import { useState } from 'react'
 import { PLAGRON_PRODUCTS } from '../data/plagronProducts.js'
+import { BIOBIZZ_PRODUCTS, BIOBIZZ_SCHEDULE } from '../data/biobizzProducts.js'
 import { NUTRIENTS, EC_GUIDE, VPD_GUIDE, SOIL_PH_GUIDE, PPFD_GUIDE, EC_PPM_CONVERSION } from '../data/nutrients.js'
 import { PHASES } from '../data/phases.js'
 
-const TABS = [
-  { id: 'products', label: '🌿 Plagron' },
-  { id: 'nutrients', label: '⚗️ Nährstoffe' },
-  { id: 'ec', label: '⚡ EC/PPM/Licht' },
-  { id: 'ph', label: '🧪 pH' },
-  { id: 'phases', label: '📋 Phasen' },
+const BRANDS = [
+  { id: 'plagron', label: 'Plagron', icon: '🌿', color: '#9fe870', description: 'Mineral · Erde & Kokos' },
+  { id: 'biobizz', label: 'BioBizz', icon: '🌱', color: '#4ade80', description: 'Bio-organisch · Erde' },
 ]
+
+function BrandSelector({ brand, onChange }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+      {BRANDS.map(b => (
+        <button
+          key={b.id}
+          onClick={() => onChange(b.id)}
+          style={{
+            padding: '12px 14px',
+            borderRadius: 'var(--r-xl)',
+            border: `2px solid ${brand === b.id ? b.color : 'var(--border)'}`,
+            background: brand === b.id ? `${b.color}15` : 'var(--card)',
+            cursor: 'pointer',
+            textAlign: 'left',
+            transition: 'all 0.18s',
+          }}
+        >
+          <div style={{ fontSize: 20, marginBottom: 4 }}>{b.icon}</div>
+          <div style={{ fontWeight: 800, fontSize: 15, color: brand === b.id ? b.color : 'var(--text)' }}>
+            {b.label}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>{b.description}</div>
+        </button>
+      ))}
+    </div>
+  )
+}
 
 function NutrientBar({ nutrient, phaseId }) {
   const importance = nutrient.importance[phaseId] || 0
@@ -34,7 +60,8 @@ function NutrientBar({ nutrient, phaseId }) {
   )
 }
 
-function ProductDetail({ product, onClose }) {
+function ProductDetail({ product, brand, onClose }) {
+  const brandColor = brand === 'biobizz' ? '#4ade80' : '#9fe870'
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-sheet" onClick={e => e.stopPropagation()}>
@@ -52,9 +79,12 @@ function ProductDetail({ product, onClose }) {
           <div>
             <div style={{ fontWeight: 800, fontSize: 18 }}>{product.name}</div>
             <div style={{ fontSize: 13, color: 'var(--text2)' }}>{product.category} · {product.medium}</div>
-            {product.npk && (
-              <span className="badge badge-green" style={{ marginTop: 4 }}>NPK: {product.npk}</span>
-            )}
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
+              {product.npk && <span className="badge badge-green">NPK: {product.npk}</span>}
+              <span className="badge" style={{ background: `${brandColor}20`, color: brandColor }}>
+                {brand === 'biobizz' ? '🌱 BioBizz' : '🌿 Plagron'}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -211,17 +241,28 @@ export default function NutrientGuide({ grow }) {
   const [filterPhase, setFilterPhase] = useState('all')
   const [medium, setMedium] = useState('soil')
 
-  const { currentPhase } = grow
+  const { currentPhase, brand, setBrand } = grow
 
+  const products = brand === 'biobizz' ? BIOBIZZ_PRODUCTS : PLAGRON_PRODUCTS
   const filteredProducts = filterPhase === 'all'
-    ? PLAGRON_PRODUCTS
-    : PLAGRON_PRODUCTS.filter(p => p.phases.includes(filterPhase))
+    ? products
+    : products.filter(p => p.phases.includes(filterPhase))
 
   const activePhaseId = currentPhase?.id || 'vegetative'
+
+  const TABS = [
+    { id: 'products', label: brand === 'biobizz' ? '🌱 BioBizz' : '🌿 Plagron' },
+    { id: 'nutrients', label: '⚗️ Nährstoffe' },
+    { id: 'ec', label: '⚡ EC/PPM/Licht' },
+    { id: 'ph', label: '🧪 pH' },
+    { id: 'phases', label: '📋 Phasen' },
+  ]
 
   return (
     <div className="page">
       <h1 className="page-title">🌿 Dünger & Nährstoffe</h1>
+
+      <BrandSelector brand={brand} onChange={setBrand} />
 
       <div className="tab-bar">
         {TABS.map(t => (
@@ -235,7 +276,7 @@ export default function NutrientGuide({ grow }) {
         ))}
       </div>
 
-      {/* PLAGRON PRODUCTS */}
+      {/* PRODUKTE */}
       {tab === 'products' && (
         <>
           {currentPhase && (
@@ -243,6 +284,16 @@ export default function NutrientGuide({ grow }) {
               <span className="tip-icon">{currentPhase.icon}</span>
               <div style={{ fontSize: 13 }}>
                 Du bist in der <strong>{currentPhase.name}</strong> — gefilterte Empfehlungen unten.
+              </div>
+            </div>
+          )}
+
+          {brand === 'biobizz' && (
+            <div className="tip-card blue" style={{ marginBottom: 12 }}>
+              <span className="tip-icon">🌱</span>
+              <div style={{ fontSize: 13 }}>
+                <strong>BioBizz — Bio-organisch.</strong> Empfohlener pH: <strong>6.0–7.0</strong> im Boden.
+                Bio-Dünger wirkt langsamer aber nachhaltiger als Mineral.
               </div>
             </div>
           )}
@@ -255,6 +306,13 @@ export default function NutrientGuide({ grow }) {
               </button>
             ))}
           </div>
+
+          {filteredProducts.length === 0 && (
+            <div className="tip-card yellow" style={{ marginTop: 8 }}>
+              <span className="tip-icon">ℹ️</span>
+              <div style={{ fontSize: 13 }}>Keine Produkte für diese Phase bei {brand === 'biobizz' ? 'BioBizz' : 'Plagron'}.</div>
+            </div>
+          )}
 
           {filteredProducts.map(product => (
             <div
@@ -291,35 +349,58 @@ export default function NutrientGuide({ grow }) {
             </div>
           ))}
 
-          {/* Feeding schedule summary */}
-          <div className="section-title">Phasenbezogener Düngepan</div>
+          {/* Düngepan */}
+          <div className="section-title">
+            {brand === 'biobizz' ? 'BioBizz Wochenplan' : 'Phasenbezogener Düngepan'}
+          </div>
           <div className="card">
-            {PHASES.filter(p => p.feeding && p.feeding.length > 0).map(phase => (
-              <div key={phase.id} style={{ marginBottom: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <span style={{ fontSize: 20 }}>{phase.icon}</span>
-                  <span style={{ fontWeight: 700, color: phase.color }}>{phase.name}</span>
-                </div>
-                {phase.feeding.map((f, i) => (
-                  <div key={i} style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    padding: '6px 0', borderBottom: '1px solid var(--border)',
-                    fontSize: 13,
-                  }}>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <div style={{ width: 8, height: 8, borderRadius: 4, background: f.color, flexShrink: 0 }} />
-                      <span>{f.product}</span>
-                    </div>
-                    <span style={{ color: 'var(--green)', fontWeight: 600 }}>{f.dose}</span>
+            {brand === 'biobizz'
+              ? BIOBIZZ_SCHEDULE.map((week, wi) => (
+                <div key={wi} style={{ marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <span style={{ fontWeight: 700, color: '#4ade80' }}>{week.week}</span>
+                    <span style={{ fontSize: 12, color: 'var(--text3)' }}>· {week.phase}</span>
                   </div>
-                ))}
-              </div>
-            ))}
+                  {week.products.map((f, i) => (
+                    <div key={i} style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      padding: '6px 0', borderBottom: '1px solid var(--border)', fontSize: 13,
+                    }}>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <div style={{ width: 8, height: 8, borderRadius: 4, background: f.color, flexShrink: 0 }} />
+                        <span>{f.product}</span>
+                      </div>
+                      <span style={{ color: '#4ade80', fontWeight: 600 }}>{f.dose}</span>
+                    </div>
+                  ))}
+                </div>
+              ))
+              : PHASES.filter(p => p.feeding && p.feeding.length > 0).map(phase => (
+                <div key={phase.id} style={{ marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <span style={{ fontSize: 20 }}>{phase.icon}</span>
+                    <span style={{ fontWeight: 700, color: phase.color }}>{phase.name}</span>
+                  </div>
+                  {phase.feeding.map((f, i) => (
+                    <div key={i} style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      padding: '6px 0', borderBottom: '1px solid var(--border)', fontSize: 13,
+                    }}>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <div style={{ width: 8, height: 8, borderRadius: 4, background: f.color, flexShrink: 0 }} />
+                        <span>{f.product}</span>
+                      </div>
+                      <span style={{ color: 'var(--green)', fontWeight: 600 }}>{f.dose}</span>
+                    </div>
+                  ))}
+                </div>
+              ))
+            }
           </div>
         </>
       )}
 
-      {/* NUTRIENTS */}
+      {/* NÄHRSTOFFE */}
       {tab === 'nutrients' && (
         <>
           <div className="tip-card blue" style={{ marginBottom: 12 }}>
@@ -331,8 +412,8 @@ export default function NutrientGuide({ grow }) {
 
           <div className="tab-bar scroll-x">
             {PHASES.slice(0, 7).map(p => (
-              <button key={p.id} className={`tab-btn ${activePhaseId === p.id ? 'active' : ''} ${filterPhase === p.id ? 'active' : ''}`}
-                onClick={() => setFilterPhase(p.id === filterPhase ? activePhaseId : p.id)}>
+              <button key={p.id} className={`tab-btn ${(filterPhase === p.id || (filterPhase === 'all' && activePhaseId === p.id)) ? 'active' : ''}`}
+                onClick={() => setFilterPhase(p.id === filterPhase ? 'all' : p.id)}>
                 {p.icon} {p.name}
               </button>
             ))}
@@ -388,16 +469,23 @@ export default function NutrientGuide({ grow }) {
             <button className={`option-btn ${medium === 'hydro' ? 'selected' : ''}`} onClick={() => setMedium('hydro')}>💧 Hydro</button>
           </div>
 
+          {brand === 'biobizz' && (
+            <div className="tip-card green" style={{ marginBottom: 12 }}>
+              <span className="tip-icon">🌱</span>
+              <div style={{ fontSize: 13 }}>
+                <strong>BioBizz Bio-Grow Tipp:</strong> EC-Werte bei Bio-Dünger sind niedriger als bei Mineral. Erde puffert und speichert Nährstoffe — weniger ist oft mehr!
+              </div>
+            </div>
+          )}
+
           <div className="tip-card blue" style={{ marginBottom: 12 }}>
             <span className="tip-icon">⚡</span>
             <div style={{ fontSize: 13 }}>
-              Werte aus der PPM/EC Referenztabelle. EC steigert sich mit dem Wachstumsstadium.
-              Bei jungen Pflanzen niedrig starten!
+              Werte aus der PPM/EC Referenztabelle. EC steigert sich mit dem Wachstumsstadium. Bei jungen Pflanzen niedrig starten!
             </div>
           </div>
 
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            {/* Table header */}
             <div style={{
               display: 'grid', gridTemplateColumns: '2fr 1fr 1fr',
               padding: '10px 14px', background: 'var(--card2)',
@@ -407,7 +495,6 @@ export default function NutrientGuide({ grow }) {
               <div>PPM</div>
               <div>EC (mS/cm)</div>
             </div>
-
             {EC_GUIDE[medium].map((row, i) => {
               const isFlush = row.stage === 'Flushing'
               return (
@@ -417,15 +504,9 @@ export default function NutrientGuide({ grow }) {
                   background: i % 2 === 0 ? 'var(--card)' : 'var(--surface)',
                   borderBottom: i < EC_GUIDE[medium].length - 1 ? '1px solid var(--border)' : undefined,
                 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: isFlush ? 'var(--blue)' : 'var(--text)' }}>
-                    {row.stage}
-                  </div>
-                  <div style={{ fontSize: 13, color: 'var(--text2)' }}>
-                    {row.ppmMin}–{row.ppmMax}
-                  </div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: isFlush ? 'var(--blue)' : 'var(--green)' }}>
-                    {row.ecMin}–{row.ecMax}
-                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: isFlush ? 'var(--blue)' : 'var(--text)' }}>{row.stage}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text2)' }}>{row.ppmMin}–{row.ppmMax}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: isFlush ? 'var(--blue)' : 'var(--green)' }}>{row.ecMin}–{row.ecMax}</div>
                 </div>
               )
             })}
@@ -485,20 +566,21 @@ export default function NutrientGuide({ grow }) {
           <div className="tip-card green" style={{ marginBottom: 14 }}>
             <span className="tip-icon">🎯</span>
             <div style={{ fontSize: 13 }}>
-              <strong>Optimaler Boden-pH: 5.5–6.5</strong><br />
-              Der richtige pH ist entscheidend! Ein falscher pH blockiert die Nährstoffaufnahme,
-              selbst wenn ausreichend Dünger vorhanden ist.
+              {brand === 'biobizz'
+                ? <><strong>BioBizz pH im Boden: 6.0–7.0</strong><br />Bio-Erde puffert den pH natürlich. Wasser immer auf pH 6.2–6.5 einstellen.</>
+                : <><strong>Optimaler Boden-pH: 5.5–6.5</strong><br />Der richtige pH ist entscheidend! Ein falscher pH blockiert die Nährstoffaufnahme, selbst wenn ausreichend Dünger vorhanden ist.</>
+              }
             </div>
           </div>
 
           <div className="section-title">pH nach Wachstumsphase</div>
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
             {[
-              { phase: 'Keimlinge / Sämlinge', ph: '5.8–5.9', color: '#86efac' },
-              { phase: 'Vegetationsphase', ph: '6.0–6.2', color: '#22c55e' },
-              { phase: 'Vorblüte', ph: '6.0–6.2', color: '#c084fc' },
-              { phase: 'Blütephase', ph: '6.0–6.3', color: '#f472b6' },
-              { phase: 'Spülphase', ph: '6.0–6.3', color: '#38bdf8' },
+              { phase: 'Keimlinge / Sämlinge', ph: brand === 'biobizz' ? '6.0–6.5' : '5.8–5.9', color: '#86efac' },
+              { phase: 'Vegetationsphase', ph: brand === 'biobizz' ? '6.0–6.5' : '6.0–6.2', color: '#22c55e' },
+              { phase: 'Vorblüte', ph: brand === 'biobizz' ? '6.2–6.5' : '6.0–6.2', color: '#c084fc' },
+              { phase: 'Blütephase', ph: brand === 'biobizz' ? '6.2–6.8' : '6.0–6.3', color: '#f472b6' },
+              { phase: 'Spülphase', ph: brand === 'biobizz' ? '6.2–6.5' : '6.0–6.3', color: '#38bdf8' },
             ].map((r, i) => (
               <div key={i} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -512,36 +594,20 @@ export default function NutrientGuide({ grow }) {
           </div>
 
           <div className="section-title">Nährstoffaufnahme nach pH</div>
-          <div className="tip-card blue" style={{ marginBottom: 12 }}>
-            <span className="tip-icon">📈</span>
-            <div style={{ fontSize: 13 }}>
-              Die nachfolgende Übersicht zeigt den optimalen pH-Bereich für jeden Nährstoff.
-              Außerhalb dieser Bereiche wird der Nährstoff blockiert.
-            </div>
-          </div>
-
           <div className="card">
             {NUTRIENTS.map(n => (
               <div key={n.symbol} style={{ marginBottom: 12 }} onClick={() => setSelectedNutrient(n)}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: n.color }}>
-                    {n.symbol} — {n.name}
-                  </span>
-                  <span style={{ fontSize: 12, color: 'var(--text3)' }}>
-                    pH {n.optimalPHMin}–{n.optimalPHMax}
-                  </span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: n.color }}>{n.symbol} — {n.name}</span>
+                  <span style={{ fontSize: 12, color: 'var(--text3)' }}>pH {n.optimalPHMin}–{n.optimalPHMax}</span>
                 </div>
-                {/* Visual pH bar from 4 to 10 */}
                 <div style={{ position: 'relative', height: 8, background: 'var(--border)', borderRadius: 4, overflow: 'hidden' }}>
                   <div style={{
                     position: 'absolute',
                     left: `${((n.optimalPHMin - 4) / 6) * 100}%`,
                     width: `${((n.optimalPHMax - n.optimalPHMin) / 6) * 100}%`,
-                    height: '100%',
-                    background: n.color,
-                    borderRadius: 4,
+                    height: '100%', background: n.color, borderRadius: 4,
                   }} />
-                  {/* Optimal zone marker (5.5-6.5) */}
                   <div style={{
                     position: 'absolute',
                     left: `${((5.5 - 4) / 6) * 100}%`,
@@ -553,11 +619,9 @@ export default function NutrientGuide({ grow }) {
                   }} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>
-                  <span>pH 4</span>
-                  <span>5</span>
+                  <span>pH 4</span><span>5</span>
                   <span style={{ color: 'var(--green)', fontWeight: 600 }}>5.5–6.5 ✓</span>
-                  <span>8</span>
-                  <span>10</span>
+                  <span>8</span><span>10</span>
                 </div>
               </div>
             ))}
@@ -585,7 +649,7 @@ export default function NutrientGuide({ grow }) {
         </>
       )}
 
-      {/* PHASES */}
+      {/* PHASEN */}
       {tab === 'phases' && (
         <>
           <div className="tip-card blue" style={{ marginBottom: 14 }}>
@@ -637,20 +701,26 @@ export default function NutrientGuide({ grow }) {
                 </div>
               )}
 
-              {phase.plagronProducts.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                  {phase.plagronProducts.map((p, i) => (
-                    <span key={i} className="pill" style={{ color: phase.color }}>{p}</span>
-                  ))}
-                </div>
-              )}
+              {/* Produkte je nach Brand */}
+              {(() => {
+                const phaseProducts = brand === 'biobizz'
+                  ? BIOBIZZ_PRODUCTS.filter(p => p.phases.includes(phase.id)).map(p => p.name)
+                  : (phase.plagronProducts || [])
+                return phaseProducts.length > 0 ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                    {phaseProducts.map((p, i) => (
+                      <span key={i} className="pill" style={{ color: phase.color }}>{p}</span>
+                    ))}
+                  </div>
+                ) : null
+              })()}
             </div>
           ))}
         </>
       )}
 
       {selectedProduct && (
-        <ProductDetail product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+        <ProductDetail product={selectedProduct} brand={brand} onClose={() => setSelectedProduct(null)} />
       )}
 
       {selectedNutrient && (
