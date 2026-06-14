@@ -1,17 +1,19 @@
 import { useState } from 'react'
 import { PLAGRON_PRODUCTS } from '../data/plagronProducts.js'
 import { BIOBIZZ_PRODUCTS, BIOBIZZ_SCHEDULE } from '../data/biobizzProducts.js'
+import { HESI_PRODUCTS, HESI_SCHEDULE } from '../data/hesiProducts.js'
 import { NUTRIENTS, EC_GUIDE, VPD_GUIDE, SOIL_PH_GUIDE, PPFD_GUIDE, EC_PPM_CONVERSION } from '../data/nutrients.js'
 import { PHASES } from '../data/phases.js'
 
 const BRANDS = [
   { id: 'plagron', label: 'Plagron', icon: '🌿', color: '#9fe870', description: 'Mineral · Erde & Kokos' },
   { id: 'biobizz', label: 'BioBizz', icon: '🌱', color: '#4ade80', description: 'Bio-organisch · Erde' },
+  { id: 'hesi', label: 'Hesi', icon: '💜', color: '#a78bfa', description: 'Mineral · Erde & Hydro' },
 ]
 
 function BrandSelector({ brand, onChange }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 16 }}>
       {BRANDS.map(b => (
         <button
           key={b.id}
@@ -243,7 +245,7 @@ export default function NutrientGuide({ grow }) {
 
   const { currentPhase, brand, setBrand } = grow
 
-  const products = brand === 'biobizz' ? BIOBIZZ_PRODUCTS : PLAGRON_PRODUCTS
+  const products = brand === 'biobizz' ? BIOBIZZ_PRODUCTS : brand === 'hesi' ? HESI_PRODUCTS : PLAGRON_PRODUCTS
   const filteredProducts = filterPhase === 'all'
     ? products
     : products.filter(p => p.phases.includes(filterPhase))
@@ -251,7 +253,7 @@ export default function NutrientGuide({ grow }) {
   const activePhaseId = currentPhase?.id || 'vegetative'
 
   const TABS = [
-    { id: 'products', label: brand === 'biobizz' ? '🌱 BioBizz' : '🌿 Plagron' },
+    { id: 'products', label: brand === 'biobizz' ? '🌱 BioBizz' : brand === 'hesi' ? '💜 Hesi' : '🌿 Plagron' },
     { id: 'nutrients', label: '⚗️ Nährstoffe' },
     { id: 'ec', label: '⚡ EC/PPM/Licht' },
     { id: 'ph', label: '🧪 pH' },
@@ -294,6 +296,15 @@ export default function NutrientGuide({ grow }) {
               <div style={{ fontSize: 13 }}>
                 <strong>BioBizz — Bio-organisch.</strong> Empfohlener pH: <strong>6.0–7.0</strong> im Boden.
                 Bio-Dünger wirkt langsamer aber nachhaltiger als Mineral.
+              </div>
+            </div>
+          )}
+          {brand === 'hesi' && (
+            <div className="tip-card blue" style={{ marginBottom: 12 }}>
+              <span className="tip-icon">💜</span>
+              <div style={{ fontSize: 13 }}>
+                <strong>Hesi — Mineral, vollständig.</strong> pH: <strong>6.0–6.5</strong> im Boden.
+                TNT & Bloom Complex enthalten bereits Spurenelemente und Vitamine — weniger Zusatzprodukte nötig.
               </div>
             </div>
           )}
@@ -351,10 +362,31 @@ export default function NutrientGuide({ grow }) {
 
           {/* Düngepan */}
           <div className="section-title">
-            {brand === 'biobizz' ? 'BioBizz Wochenplan' : 'Phasenbezogener Düngepan'}
+            {brand === 'biobizz' ? 'BioBizz Wochenplan' : brand === 'hesi' ? 'Hesi Wochenplan' : 'Plagron Düngepan'}
           </div>
           <div className="card">
-            {brand === 'biobizz'
+            {brand === 'hesi'
+              ? HESI_SCHEDULE.map((week, wi) => (
+                <div key={wi} style={{ marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <span style={{ fontWeight: 700, color: '#a78bfa' }}>{week.week}</span>
+                    <span style={{ fontSize: 12, color: 'var(--text3)' }}>· {week.phase}</span>
+                  </div>
+                  {week.products.map((f, i) => (
+                    <div key={i} style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      padding: '6px 0', borderBottom: '1px solid var(--border)', fontSize: 13,
+                    }}>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <div style={{ width: 8, height: 8, borderRadius: 4, background: f.color, flexShrink: 0 }} />
+                        <span>{f.product}</span>
+                      </div>
+                      <span style={{ color: '#a78bfa', fontWeight: 600 }}>{f.dose}</span>
+                    </div>
+                  ))}
+                </div>
+              ))
+              : brand === 'biobizz'
               ? BIOBIZZ_SCHEDULE.map((week, wi) => (
                 <div key={wi} style={{ marginBottom: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -568,6 +600,8 @@ export default function NutrientGuide({ grow }) {
             <div style={{ fontSize: 13 }}>
               {brand === 'biobizz'
                 ? <><strong>BioBizz pH im Boden: 6.0–7.0</strong><br />Bio-Erde puffert den pH natürlich. Wasser immer auf pH 6.2–6.5 einstellen.</>
+                : brand === 'hesi'
+                ? <><strong>Hesi pH im Boden: 6.0–6.5</strong><br />Hesi-Produkte sind pH-stabil formuliert. Wasser auf 6.0–6.2 einstellen, Substrat hält sich dann bei 6.0–6.5.</>
                 : <><strong>Optimaler Boden-pH: 5.5–6.5</strong><br />Der richtige pH ist entscheidend! Ein falscher pH blockiert die Nährstoffaufnahme, selbst wenn ausreichend Dünger vorhanden ist.</>
               }
             </div>
@@ -705,6 +739,8 @@ export default function NutrientGuide({ grow }) {
               {(() => {
                 const phaseProducts = brand === 'biobizz'
                   ? BIOBIZZ_PRODUCTS.filter(p => p.phases.includes(phase.id)).map(p => p.name)
+                  : brand === 'hesi'
+                  ? HESI_PRODUCTS.filter(p => p.phases.includes(phase.id)).map(p => p.name)
                   : (phase.plagronProducts || [])
                 return phaseProducts.length > 0 ? (
                   <div style={{ display: 'flex', flexWrap: 'wrap' }}>
