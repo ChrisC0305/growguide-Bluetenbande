@@ -8,6 +8,7 @@ export default function GrowSetup({ onStart }) {
     startDate: today,
     medium: 'soil',
     method: 'indoor',
+    brand: 'plagron',
     vegDays: '28',
     bloomDays: '63',
     notes: '',
@@ -113,6 +114,38 @@ export default function GrowSetup({ onStart }) {
                   onClick={() => set('method', o.val)}
                 >
                   {o.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Dünger-Marke</label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+              {[
+                { val: 'plagron', icon: '🌿', label: 'Plagron', sub: 'Mineral' },
+                { val: 'biobizz', icon: '🌱', label: 'BioBizz', sub: 'Bio-organisch' },
+                { val: 'hesi',    icon: '💜', label: 'Hesi',    sub: 'Mineral' },
+              ].map(o => (
+                <button
+                  key={o.val}
+                  type="button"
+                  onClick={() => set('brand', o.val)}
+                  style={{
+                    padding: '10px 8px',
+                    borderRadius: 'var(--r-xl)',
+                    border: `2px solid ${form.brand === o.val ? 'var(--primary)' : 'var(--border)'}`,
+                    background: form.brand === o.val ? 'rgba(159,232,112,0.1)' : 'var(--surface)',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <div style={{ fontSize: 22, marginBottom: 3 }}>{o.icon}</div>
+                  <div style={{ fontWeight: 800, fontSize: 13, color: form.brand === o.val ? 'var(--primary)' : 'var(--text)' }}>
+                    {o.label}
+                  </div>
+                  <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 1 }}>{o.sub}</div>
                 </button>
               ))}
             </div>
