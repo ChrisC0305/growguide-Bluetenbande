@@ -146,7 +146,6 @@ export function useGrow() {
       startDate: growData.startDate || new Date().toISOString(),
       medium: growData.medium || 'soil',
       method: growData.method || 'indoor',
-      brand: growData.brand || 'plagron',
       vegDays: parseInt(growData.vegDays) || 28,
       bloomDays: parseInt(growData.bloomDays) || 63,
       notes: growData.notes || '',
@@ -154,7 +153,6 @@ export function useGrow() {
     }
     setGrows(prev => [...prev, newGrow])
     setActiveGrowId(id)
-    if (growData.brand) setBrandState(growData.brand)
     return id
   }, [])
 
